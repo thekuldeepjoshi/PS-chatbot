@@ -1,91 +1,54 @@
-# PS Chatbot: Business Analytics MCP Server
+# PS Chatbot: Browser Chat + MCP Server
 
-A small Model Context Protocol (MCP) server exposing fictional business customer data through tools, a resource, and a prompt. It is designed as a practical portfolio and interview demo.
+A small business analytics chatbot with a browser interface and an MCP server. It uses fictional customer data for demonstration.
 
-## Architecture
+## Browser app
 
-```mermaid
-flowchart LR
-    A[AI host or MCP client] <-->|MCP over Streamable HTTP| B[Python MCP server]
-    B --> C[Analytics tools]
-    B --> D[Customer resource]
-    B --> E[Revenue summary prompt]
-    C --> F[(In-memory demo data)]
-    D --> F
-```
+Open the deployed Render URL to use the chat interface. Try:
+- "What is the total revenue?"
+- "Show me the top 3 customers"
+- "Search for Atlas"
 
-## Capabilities
+The browser chat is a deterministic demo, not a connection to an external AI model. It supports the sample analytics intents without requiring an API key.
 
-**Tools**
-- `get_total_revenue()`: total revenue in EUR.
-- `get_top_customers(limit)`: customers ranked by revenue.
-- `search_customer(name)`: search by customer name.
-- `create_customer(customer_id, name, revenue)`: add a customer to the in-memory dataset.
+## MCP endpoint
 
-**Resource**
-- `business://customers`: customer directory in JSON format.
-
-**Prompt**
-- `revenue_summary`: reusable prompt for analyzing the customer data.
-
-The sample data is fictional and resets whenever the server restarts.
+The MCP Streamable HTTP endpoint is available at `/mcp` on the same host.
 
 ## Deploy on Render
 
-This repository includes a `render.yaml` Blueprint. In Render:
-
-1. Open [Render Dashboard](https://dashboard.render.com/).
-2. Select **New** > **Blueprint**.
-3. Connect the GitHub repository `thekuldeepjoshi/PS-chatbot`.
-4. Render reads `render.yaml` and creates the web service.
-5. When deployment completes, your MCP endpoint is `https://YOUR-SERVICE.onrender.com/mcp`.
-
-You can also create a Web Service manually with:
-- Runtime: **Python 3**
+The repository includes a Render Blueprint. Create a Blueprint from this repository, or configure a Web Service with:
 - Build command: `pip install -r requirements.txt`
-- Start command: `python server.py`
+- Start command: `uvicorn app:app --host 0.0.0.0 --port $PORT`
 - Branch: `main`
 
-The server binds to `0.0.0.0` and uses Render's `PORT` environment variable.
-
-## Run locally
-
-Requirements: Python 3.10 or newer.
+## Local setup
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-python server.py
+uvicorn app:app --reload
 ```
 
-The local MCP endpoint is `http://localhost:10000/mcp`.
+Open `http://localhost:8000` for the chat UI. The MCP endpoint is `http://localhost:8000/mcp`.
 
-## Test with MCP Inspector
+## MCP capabilities
 
-With the virtual environment activated:
+Tools:
+- `get_total_revenue()`
+- `get_top_customers(limit)`
+- `search_customer(name)`
+- `create_customer(customer_id, name, revenue)`
 
-```bash
-mcp dev server.py
-```
+Resource: `business://customers`
 
-Connect to the server and explore its tools, resource, and prompt.
+Prompt: `revenue_summary`
 
-## Interview walkthrough
-
-1. Explain that MCP standardizes how an AI application discovers and uses external capabilities.
-2. Connect an MCP client to the deployed `/mcp` endpoint.
-3. Discover the tools and call `get_total_revenue` and `get_top_customers`.
-4. Read the `business://customers` resource.
-5. Explain how authentication, persistent storage, authorization, logging, and validation would be added for production.
-
-## Production considerations
-
-This is a learning demo, not a production service. A real deployment should use persistent storage, authenticate clients, authorize each operation, validate inputs, apply rate limits, log access safely, and avoid exposing sensitive customer data.
+The data is fictional and held in memory, so changes reset when the service restarts. For production, add persistent storage, authentication, authorization, and robust monitoring.
 
 ## References
 
-- [Model Context Protocol documentation](https://modelcontextprotocol.io/)
-- [Official Python SDK](https://github.com/modelcontextprotocol/python-sdk)
+- [MCP Python SDK: ASGI deployment](https://py.sdk.modelcontextprotocol.io/run/asgi/)
 - [Render Web Services](https://render.com/docs/web-services)
