@@ -1,28 +1,16 @@
-# PS Chatbot: Browser Chat + MCP Server
+# Pharma Client Intelligence
 
-A small business analytics chatbot with a browser interface and an MCP server. It uses fictional customer data for demonstration.
+A browser-based demo and MCP server concept for a pharmaceutical testing services business. It helps client users explore drug profiles, sample testing status, project milestones and trusted public pharmaceutical information sources.
 
-## Browser app
+## Features
 
-Open the deployed Render URL to use the chat interface. Try:
-- "What is the total revenue?"
-- "Show me the top 3 customers"
-- "Search for Atlas"
+- Browser chat interface for drug, testing and project questions.
+- MCP tools for drug profiles, testing status, project lists and pharma news sources.
+- MCP resources for demo drug and project directories.
+- Links to FDA, EMA and ClinicalTrials.gov public information.
+- Render deployment using FastAPI and Streamable HTTP MCP.
 
-The browser chat is a deterministic demo, not a connection to an external AI model. It supports the sample analytics intents without requiring an API key.
-
-## MCP endpoint
-
-The MCP Streamable HTTP endpoint is available at `/mcp` on the same host.
-
-## Deploy on Render
-
-The repository includes a Render Blueprint. Create a Blueprint from this repository, or configure a Web Service with:
-- Build command: `pip install -r requirements.txt`
-- Start command: `uvicorn app:app --host 0.0.0.0 --port $PORT`
-- Branch: `main`
-
-## Local setup
+## Run locally
 
 ```bash
 python -m venv .venv
@@ -32,23 +20,31 @@ pip install -r requirements.txt
 uvicorn app:app --reload
 ```
 
-Open `http://localhost:8000` for the chat UI. The MCP endpoint is `http://localhost:8000/mcp`.
+Open `http://localhost:8000`. MCP endpoint: `http://localhost:8000/mcp`.
 
-## MCP capabilities
+## Render
 
-Tools:
-- `get_total_revenue()`
-- `get_top_customers(limit)`
-- `search_customer(name)`
-- `create_customer(customer_id, name, revenue)`
+- Build command: `pip install -r requirements.txt`
+- Start command: `uvicorn app:app --host 0.0.0.0 --port $PORT`
+- Root directory: blank
+- Branch: `main`
 
-Resource: `business://customers`
+## Example questions
 
-Prompt: `revenue_summary`
+- Show drug RX-214.
+- What is the testing status?
+- Show my project milestones.
+- Show latest pharma news sources.
 
-The data is fictional and held in memory, so changes reset when the service restarts. For production, add persistent storage, authentication, authorization, and robust monitoring.
+## Important limitations
 
-## References
+All drug, client, project, status and milestone records in this repository are fictional examples. The news section links to public sources; it does not currently retrieve, rank or summarize live news. This prototype is not a validated laboratory information system, regulatory system or clinical decision support tool.
 
-- [MCP Python SDK: ASGI deployment](https://py.sdk.modelcontextprotocol.io/run/asgi/)
-- [Render Web Services](https://render.com/docs/web-services)
+Before using it with real clients, implement verified client authentication and authorization, tenant-level data isolation, secure document storage, audit trails, retention policies, and review of regulatory and scientific content. Do not put patient-identifiable data, confidential client records or unpublished trial data into this public demo.
+
+## Official public information
+
+- [FDA Drug Safety and Availability](https://www.fda.gov/drugs/drug-safety-and-availability)
+- [European Medicines Agency News](https://www.ema.europa.eu/en/news)
+- [ClinicalTrials.gov](https://clinicaltrials.gov/)
+- [MCP documentation](https://modelcontextprotocol.io/)
