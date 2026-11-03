@@ -69,7 +69,7 @@ async def lifespan(app):
         yield
 
 
-app = FastAPI(title="Pharma Client Intelligence", lifespan=lifespan)
+app = FastAPI(title="PharmaPulse Intelligence", lifespan=lifespan)
 
 
 @app.get("/", response_class=HTMLResponse)
