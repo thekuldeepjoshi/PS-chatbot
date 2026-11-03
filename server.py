@@ -160,6 +160,96 @@ async def search_fda_safety(query: str = "") -> dict:
     return {"records": records, "source": "openFDA drug enforcement API", "source_url": "https://open.fda.gov/apis/drug/enforcement/"}
 
 
+async def smart_answer(question: str) -> str:
+    """Intent-route a browser chat question to private demo records or live public datasets."""
+    import re
+
+    q = question.casefold().strip()
+    if not q:
+        return "Please enter a question."
+
+    def subject() -> str:
+        match = re.search(r"\\b(?:for|about|of|on)\\s+([A-Za-z0-9][A-Za-z0-9 .-]{1,55})", question, re.I)
+        if match:
+            value = match.group(1).strip(" .?!")
+            return re.split(r"\\b(?:and|with|including|in|status|profile|information)\\b", value, flags=re.I)[0].strip()
+        code = re.search(r"\\b[A-Z]{2,5}-?\\d{2,5}\\b", question, re.I)
+        return code.group(0) if code else ""
+
+    if any(x in q for x in ("my project", "client project", "project status", "project milestone", "report status", "my testing", "our project")):
+        lines = ["Private project workspace (fictional demo records):"]
+        lines.extend(f"- {p['project_id']} | {p['client']} | {p['drug']} | {p['status']} | Next: {p['next_milestone']} | Report: {p['report_status']}" for p in get_client_projects())
+        lines.append("These are sample records, not live client data.")
+        return "\\n".join(lines)
+
+    code = re.search(r"\\b[A-Z]{2,5}-?\\d{2,5}\\b", question, re.I)
+    if any(x in q for x in ("testing status", "test status", "testing progress", "milestone", "report availability")):
+        if code and code.group(0).upper() in DRUGS:
+            r = get_testing_status(code.group(0))
+            return f"Fictional demo testing record for {r['drug_id']}:\\nStage: {r['stage']}\\nStatus: {r['status']}\\nLast updated: {r['updated']}\\nNext milestone: {r['next_milestone']}\\nReport: {r['report_status']}\\nThis is not a live laboratory result."
+        return "I can show fictional sample project records only. Which sample compound ID do you want to check? Public databases do not contain your company's laboratory testing status."
+
+    if any(x in q for x in ("clinical trial", "clinical study", "trial search", "study search", "trials for", "studies for")):
+        term = subject()
+        if not term:
+            return "Which drug, intervention or condition should I search on ClinicalTrials.gov?"
+        try:
+            data = await search_clinical_trials(term)
+            lines = [f"ClinicalTrials.gov results for: {term}"]
+            for s in data.get("studies", []):
+                lines.append(f"- {s.get('nct_id')}: {s.get('title')} | Status: {s.get('status')} | Phase: {', '.join(s.get('phase') or []) or 'Not specified'} | {s.get('url')}")
+            if not data.get("studies"):
+                lines.append("No matching studies were returned.")
+            lines.append("Source: " + data["source_url"] + ". Check the registry record for the latest sponsor-submitted information.")
+            return "\\n".join(lines)
+        except Exception:
+            return "ClinicalTrials.gov could not be reached right now. Try https://clinicaltrials.gov/ directly."
+
+    if any(x in q for x in ("recall", "drug safety", "safety alert", "enforcement", "withdrawn")):
+        term = subject()
+        try:
+            data = await search_fda_safety(term)
+            lines = ["Recent FDA drug enforcement/recall records:"]
+            for r in data.get("records", []):
+                lines.append(f"- {r.get('product_description') or 'Product not stated'} | {r.get('status')} | Class {r.get('classification')} | Date: {r.get('report_date')} | Reason: {r.get('reason_for_recall')}")
+            if not data.get("records"):
+                lines.append("No matching records were returned.")
+            lines.append("Source: " + data["source_url"])
+            lines.append("This is recall/enforcement data, not a complete adverse-event database or clinical risk assessment.")
+            return "\\n".join(lines)
+        except Exception:
+            return "openFDA could not be reached. Try https://www.fda.gov/drugs/drug-safety-and-availability."
+
+    if any(x in q for x in ("drug", "compound", "medicine", "medication", "molecule", "pubchem", "chembl", "drug profile")):
+        term = subject()
+        if not term and code and code.group(0).upper() in DRUGS:
+            d = get_drug_profile(code.group(0))
+            return f"Private demo drug profile: {d['drug_id']} | {d['drug_name']}\\nClient: {d['client']}\\nTherapeutic area: {d['therapeutic_area']}\\nStage: {d['development_stage']}\\nTesting package: {d['testing_package']}\\nFictional sample record, separate from public datasets."
+        if not term:
+            return "Which drug or compound should I look up? Provide a generic name, brand name, synonym or ChEMBL ID."
+        try:
+            data = await search_public_drug(term)
+            lines = [f"Public drug/compound lookup: {term}"]
+            if data.get("pubchem"):
+                lines.append("PubChem: " + json.dumps(data["pubchem"], ensure_ascii=False))
+            if data.get("chembl"):
+                lines.append("ChEMBL: " + json.dumps(data["chembl"], ensure_ascii=False))
+            for label in data.get("fda_labels", []):
+                lines.append("FDA label: " + json.dumps(label, ensure_ascii=False))
+            if data.get("message"):
+                lines.append(data["message"])
+            lines.extend("Source: " + s["name"] + " " + s["url"] for s in data.get("sources", []))
+            lines.append("Retrieved live from public APIs. These records are reference information, not laboratory results, clinical advice or proof of approval in every jurisdiction.")
+            return "\\n".join(lines)
+        except Exception:
+            return "Public drug databases could not be reached just now. Try PubChem, ChEMBL or openFDA directly."
+
+    if any(x in q for x in ("news", "fda", "ema", "regulatory update", "pharma update", "data sources", "open data")):
+        return "\\n".join(f"{name}: {url}" for name, url in PUBLIC_SOURCES.items())
+
+    return "I can search public drug references (PubChem, ChEMBL, openFDA), clinical studies (ClinicalTrials.gov), and FDA recall records. I can also show fictional project examples. Try 'drug profile for aspirin', 'clinical trials for pembrolizumab', or 'show my project milestones'."
+
+
 @mcp.tool()
 def drug_profile(drug_id: str) -> dict:
     """Get a fictional private demo drug profile by identifier."""
