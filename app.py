@@ -12,6 +12,7 @@ from server import (
     get_testing_status,
     get_client_projects,
     get_pharma_news_sources,
+    smart_answer,
     mcp,
 )
 
@@ -84,40 +85,7 @@ async def health():
 
 @app.post("/api/chat")
 async def chat(payload: ChatRequest):
-    question = payload.message.strip()
-    q = question.casefold()
-    if not question:
-        return {"reply": "Please enter a question."}
-
-    if any(term in q for term in ("news", "fda", "ema", "regulatory update", "pharma update")):
-        sources = get_pharma_news_sources()
-        lines = ["I can point you to trusted sources for current updates. This demo does not yet fetch or summarize live news:"]
-        lines.extend(f"- {item['name']}: {item['url']}" for item in sources)
-        return {"reply": "\n".join(lines)}
-
-    if any(term in q for term in ("project", "milestone", "report", "client work")):
-        projects = get_client_projects()
-        lines = ["Sample client project overview (fictional data):"]
-        lines.extend(f"- {p['project_id']} | {p['client']} | {p['drug']} | {p['status']} | Next: {p['next_milestone']}" for p in projects)
-        return {"reply": "\n".join(lines)}
-
-    if any(term in q for term in ("status", "testing", "test progress", "stability")):
-        drug_match = re.search(r"\b[A-Z]{2,5}-?\d{2,5}\b", question, re.IGNORECASE)
-        drug_id = drug_match.group(0).upper() if drug_match else "RX-214"
-        result = get_testing_status(drug_id)
-        if "error" in result:
-            return {"reply": result["error"]}
-        return {"reply": f"Sample testing status for {result['drug_id']} ({result['drug_name']}):\nStage: {result['stage']}\nStatus: {result['status']}\nLast updated: {result['updated']}\nNext milestone: {result['next_milestone']}\n\nThis is fictional demonstration data, not a laboratory result."}
-
-    if any(term in q for term in ("drug", "compound", "profile", "rx-")):
-        drug_match = re.search(r"\b[A-Z]{2,5}-?\d{2,5}\b", question, re.IGNORECASE)
-        drug_id = drug_match.group(0).upper() if drug_match else "RX-214"
-        result = get_drug_profile(drug_id)
-        if "error" in result:
-            return {"reply": result["error"]}
-        return {"reply": f"Sample drug profile: {result['drug_id']} · {result['drug_name']}\nClient: {result['client']}\nTherapeutic area: {result['therapeutic_area']}\nDevelopment stage: {result['development_stage']}\nTesting package: {result['testing_package']}\n\nFictional demo record. Confirm all scientific and regulatory details against approved source documents."}
-
-    return {"reply": "I can help with sample drug profiles, testing status, client project milestones and trusted pharma news sources. Try: 'Show drug RX-214', 'What is the testing status?', or 'Show latest pharma news sources'."}
+    return {"reply": await smart_answer(payload.message)}
 
 
 # MCP tools remain available on the same service at /mcp.
