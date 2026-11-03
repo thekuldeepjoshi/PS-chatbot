@@ -4,120 +4,59 @@ import re
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
+
 from server import (
-    CUSTOMERS,
-    get_total_revenue,
-    get_top_customers,
-    search_customer,
+    DRUGS,
+    PROJECTS,
+    get_drug_profile,
+    get_testing_status,
+    get_client_projects,
+    get_pharma_news_sources,
     mcp,
 )
 
 PAGE = """<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PS Chatbot | Business Analytics</title>
-  <style>
-    :root { color-scheme: dark; --bg:#0b1020; --panel:#121a2d; --line:#26334d; --muted:#9aa9c2; --accent:#7c9cff; }
-    * { box-sizing:border-box; }
-    body { margin:0; min-height:100vh; background:radial-gradient(ellipse at top,#182646 0,#0b1020 55%); color:#eef3ff; font:16px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif; display:grid; place-items:center; padding:24px; }
-    .shell { width:min(850px,100%); height:min(820px,calc(100vh - 48px)); min-height:540px; display:flex; flex-direction:column; background:rgba(18,26,45,.96); border:1px solid var(--line); border-radius:22px; overflow:hidden; box-shadow:0 24px 90px #0008; }
-    header { padding:22px 26px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:14px; }
-    .mark { width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#7596ff,#8b67e8);display:grid;place-items:center;font-weight:800;color:white; }
-    h1 { font-size:17px; margin:0; letter-spacing:.2px; } .sub { color:var(--muted);font-size:13px;margin-top:2px; }
-    .status { margin-left:auto; color:#9fe3bd; font-size:12px; white-space:nowrap; } .dot { display:inline-block;width:7px;height:7px;background:#61d69a;border-radius:50%;margin-right:7px; }
-    #messages { flex:1; overflow:auto; padding:26px; display:flex; flex-direction:column; gap:18px; }
-    .msg { max-width:82%; padding:14px 17px; border:1px solid var(--line); border-radius:16px; white-space:pre-wrap; overflow-wrap:anywhere; }
-    .bot { align-self:flex-start;background:#18243b;border-top-left-radius:5px; }
-    .user { align-self:flex-end;background:#344b83;border-color:#4865a6;border-top-right-radius:5px; }
-    .label { color:#a9bce8;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px; }
-    .intro { color:#c2cde0; max-width:650px; } .suggestions { display:flex;flex-wrap:wrap;gap:9px;margin-top:14px; }
-    .chip { background:#1c2942;color:#cbd8f3;border:1px solid #344665;border-radius:999px;padding:8px 12px;cursor:pointer;font-size:13px; }
-    .chip:hover { border-color:var(--accent); }
-    form { display:flex;gap:10px;padding:18px 22px;border-top:1px solid var(--line);background:#10182a; }
-    input { flex:1;min-width:0;background:#0b1324;border:1px solid #34415b;border-radius:12px;padding:14px 15px;color:#fff;font:inherit;outline:none; }
-    input:focus { border-color:var(--accent); } button.send { border:0;border-radius:12px;padding:0 20px;background:#718fff;color:#081126;font-weight:700;cursor:pointer; } button:disabled { opacity:.55;cursor:wait; }
-    .note { padding:0 24px 15px;color:#7f8da7;font-size:11px;text-align:center; }
-    @media(max-width:600px){body{padding:0}.shell{height:100vh;min-height:0;border-radius:0;border:0}header{padding:16px}.status{font-size:0}#messages{padding:18px}.msg{max-width:92%}form{padding:13px}.note{padding-bottom:10px}}
-  </style>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pharma Client Intelligence</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#121e31;--line:#293a52;--muted:#9eb0c8;--accent:#6da8ff;--green:#76d6b0}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#0c1728,#0a1020 65%);color:#edf4ff;font:15px/1.5 Inter,system-ui,sans-serif}
+.wrap{max-width:1120px;margin:auto;padding:28px 22px 50px}.top{display:flex;align-items:center;gap:14px;margin-bottom:28px}.logo{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#448ee8,#4cc5b0);display:grid;place-items:center;font-weight:800;font-size:18px}.top h1{margin:0;font-size:22px}.top p{margin:3px 0 0;color:var(--muted);font-size:13px}.pill{margin-left:auto;border:1px solid #315b52;color:#9ce3c7;border-radius:30px;padding:6px 11px;font-size:12px}
+.hero{padding:28px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(120deg,#172b45,#142339);margin-bottom:20px}.eyebrow{color:#8dbdff;text-transform:uppercase;letter-spacing:1.6px;font-size:11px;font-weight:700}.hero h2{font-size:28px;line-height:1.2;margin:9px 0}.hero p{max-width:720px;color:#b8c8dd;margin:0}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:16px 0 24px}.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:19px}.card h3{margin:0 0 7px;font-size:16px}.card p{margin:0;color:var(--muted);font-size:13px}.card .symbol{font-size:22px;margin-bottom:10px}.section{font-size:17px;margin:24px 0 12px}.workspace{display:grid;grid-template-columns:1.4fr .8fr;gap:16px}.chat,.side{background:var(--panel);border:1px solid var(--line);border-radius:17px;overflow:hidden}.head{padding:15px 18px;border-bottom:1px solid var(--line);font-weight:650}.chatlog{height:330px;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:12px}.bubble{max-width:88%;padding:12px 14px;border-radius:13px;white-space:pre-wrap}.bot{background:#1b2b43;align-self:flex-start}.user{background:#28528a;align-self:flex-end}.small{font-size:11px;color:#9fb6d4;margin-bottom:4px}.compose{display:flex;gap:9px;padding:13px;border-top:1px solid var(--line)}input{flex:1;min-width:0;background:#0b1525;border:1px solid #354961;border-radius:10px;color:white;padding:12px;font:inherit}button{cursor:pointer}button.send{background:#78a9ff;border:0;border-radius:10px;padding:0 17px;color:#08172b;font-weight:700}.quick{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 15px}.quick button{border:1px solid #3a526d;background:#1a2b43;color:#c8dcf4;border-radius:30px;padding:7px 10px;font-size:12px}.side .item{padding:14px 17px;border-bottom:1px solid var(--line)}.item:last-child{border:0}.item strong{display:block;font-size:13px}.item span{display:block;color:var(--muted);font-size:12px;margin-top:4px}.item a{color:#91baff;text-decoration:none;font-size:12px}.notice{margin-top:18px;padding:12px 14px;background:#2a2618;border:1px solid #64522c;color:#e9d8a9;border-radius:12px;font-size:12px}.footer{text-align:center;color:#71849e;font-size:11px;margin-top:18px}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.workspace{grid-template-columns:1fr}.hero h2{font-size:23px}}@media(max-width:500px){.wrap{padding:18px 12px}.pill{font-size:0}.chatlog{height:300px}}
+</style>
 </head>
-<body>
-  <main class="shell">
-    <header>
-      <div class="mark">PS</div>
-      <div><h1>PS Business Assistant</h1><div class="sub">Customer and revenue analytics demo</div></div>
-      <div class="status"><span class="dot"></span>Online</div>
-    </header>
-    <section id="messages" aria-live="polite">
-      <div class="msg bot">
-        <div class="label">Assistant</div>
-        <div class="intro">Hi! I can help you explore the sample business data. Ask me about total revenue, top customers, or search for a customer.</div>
-        <div class="suggestions">
-          <button class="chip" data-q="What is the total revenue?">Total revenue</button>
-          <button class="chip" data-q="Show me the top 3 customers">Top customers</button>
-          <button class="chip" data-q="Search for Atlas">Search Atlas</button>
-        </div>
-      </div>
-    </section>
-    <form id="chat-form">
-      <input id="message" autocomplete="off" placeholder="Ask about revenue or customers..." aria-label="Your message">
-      <button class="send" id="send" type="submit">Send</button>
-    </form>
-    <div class="note">Demo uses fictional sample data. It does not connect to a live AI model.</div>
-  </main>
+<body><main class="wrap">
+<header class="top"><div class="logo">PI</div><div><h1>Pharma Client Intelligence</h1><p>Drug testing, project visibility and industry updates</p></div><div class="pill">DEMO ENVIRONMENT</div></header>
+<section class="hero"><div class="eyebrow">Client portal assistant</div><h2>Your testing projects, in one place.</h2><p>Ask about drug profiles, testing milestones, project progress and trusted pharmaceutical news sources. This preview uses fictional sample records.</p></section>
+<section class="grid">
+<div class="card"><div class="symbol">🧪</div><h3>Drug information</h3><p>View sample compound profiles, test stages, methods and milestone status.</p></div>
+<div class="card"><div class="symbol">📋</div><h3>Client projects</h3><p>Check project progress, next milestones and report availability.</p></div>
+<div class="card"><div class="symbol">🌐</div><h3>Pharma news</h3><p>Open official FDA, EMA and clinical-trial information sources.</p></div>
+</section>
+<h2 class="section">Ask the assistant</h2>
+<section class="workspace">
+<div class="chat"><div class="head">Pharma support assistant</div><div class="chatlog" id="log" aria-live="polite"><div class="bubble bot"><div class="small">ASSISTANT</div>Hello. Ask me about a sample drug, testing status, your project milestones, or pharmaceutical news sources.</div></div>
+<div class="quick"><button data-q="Show drug RX-214">Drug profile</button><button data-q="What is the testing status?">Testing status</button><button data-q="Show my project milestones">Project milestones</button><button data-q="Show latest pharma news sources">Pharma news</button></div>
+<form class="compose" id="form"><input id="question" placeholder="Ask about a drug, project or pharma news..." autocomplete="off"><button class="send">Send</button></form></div>
+<aside class="side"><div class="head">Trusted information sources</div>
+<div class="item"><strong>FDA Drug Safety & Availability</strong><span>US safety communications and drug updates</span><a href="https://www.fda.gov/drugs/drug-safety-and-availability" target="_blank" rel="noopener">Open FDA source ↗</a></div>
+<div class="item"><strong>EMA News</strong><span>European medicines and regulatory updates</span><a href="https://www.ema.europa.eu/en/news" target="_blank" rel="noopener">Open EMA news ↗</a></div>
+<div class="item"><strong>ClinicalTrials.gov</strong><span>Registered clinical studies and results</span><a href="https://clinicaltrials.gov/" target="_blank" rel="noopener">Search clinical trials ↗</a></div>
+<div class="item"><strong>FDA Drug Approvals</strong><span>New drug approvals and review information</span><a href="https://www.fda.gov/drugs/development-approval-process-drugs" target="_blank" rel="noopener">Open FDA approvals ↗</a></div>
+</aside></section>
+<div class="notice"><strong>Confidentiality and safety:</strong> This is a demonstration using fictional drug and client records. Do not enter real client confidential information, patient data or unpublished trial results. Production access controls, verified data sources and audit logging are required before client use.</div>
+<div class="footer">Pharma Client Intelligence · Prototype · Not for clinical decision-making</div>
+</main>
 <script>
-  const messages = document.getElementById('messages');
-  const input = document.getElementById('message');
-  const form = document.getElementById('chat-form');
-  const send = document.getElementById('send');
-
-  function addMessage(text, who) {
-    const bubble = document.createElement('div');
-    bubble.className = 'msg ' + who;
-    const label = document.createElement('div');
-    label.className = 'label';
-    label.textContent = who === 'user' ? 'You' : 'Assistant';
-    const body = document.createElement('div');
-    body.textContent = text;
-    bubble.append(label, body);
-    messages.appendChild(bubble);
-    messages.scrollTop = messages.scrollHeight;
-  }
-
-  async function ask(question) {
-    if (!question.trim()) return;
-    addMessage(question, 'user');
-    input.value = '';
-    send.disabled = true;
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({message: question})
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.detail || 'Request failed');
-      addMessage(data.reply, 'bot');
-    } catch (error) {
-      addMessage('I could not process that request. Please try again.', 'bot');
-    } finally {
-      send.disabled = false;
-      input.focus();
-    }
-  }
-
-  form.addEventListener('submit', event => {
-    event.preventDefault();
-    ask(input.value);
-  });
-  document.querySelectorAll('.chip').forEach(button => {
-    button.addEventListener('click', () => ask(button.dataset.q));
-  });
-</script>
-</body>
-</html>
-"""
+const log=document.getElementById('log'),form=document.getElementById('form'),input=document.getElementById('question');
+function add(text,who){const b=document.createElement('div');b.className='bubble '+who;const label=document.createElement('div');label.className='small';label.textContent=who==='user'?'YOU':'ASSISTANT';const body=document.createElement('div');body.textContent=text;b.append(label,body);log.append(b);log.scrollTop=log.scrollHeight}
+async function ask(q){q=q.trim();if(!q)return;add(q,'user');input.value='';try{const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:q})});const d=await r.json();add(d.reply||'No response available.','bot')}catch(e){add('Unable to reach the assistant. Please try again.','bot')}}
+form.addEventListener('submit',e=>{e.preventDefault();ask(input.value)});document.querySelectorAll('.quick button').forEach(b=>b.addEventListener('click',()=>ask(b.dataset.q)));
+</script></body></html>"""
 
 
 class ChatRequest(BaseModel):
@@ -130,9 +69,7 @@ async def lifespan(app):
         yield
 
 
-# Keep the MCP endpoint available at /mcp alongside the browser chat UI.
-mcp_app = mcp.streamable_http_app()
-app = FastAPI(title="PS Business Assistant", lifespan=lifespan)
+app = FastAPI(title="Pharma Client Intelligence", lifespan=lifespan)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -147,38 +84,41 @@ async def health():
 
 @app.post("/api/chat")
 async def chat(payload: ChatRequest):
-    message = payload.message.strip()
-    if not message:
+    question = payload.message.strip()
+    q = question.casefold()
+    if not question:
         return {"reply": "Please enter a question."}
 
-    text = message.casefold()
-
-    if any(word in text for word in ("help", "what can you do", "examples")):
-        return {"reply": "Try asking: 'What is the total revenue?', 'Show the top 3 customers', or 'Search for Atlas'."}
-
-    if "revenue" in text or "sales" in text or "turnover" in text or "total" in text:
-        result = get_total_revenue()
-        amount = result["total_revenue"]
-        return {"reply": f"Total revenue across {len(CUSTOMERS)} customers is €{amount:,.2f}."}
-
-    if any(word in text for word in ("top", "highest", "best", "largest")) and any(word in text for word in ("customer", "client", "account", "top")):
-        match = re.search(r"\b(\d{1,2})\b", text)
-        limit = min(int(match.group(1)), 20) if match else 3
-        customers = get_top_customers(limit)
-        lines = [f"{i}. {c['name']} · €{c['revenue']:,.2f}" for i, c in enumerate(customers, 1)]
-        return {"reply": "Top customers by revenue:\n" + "\n".join(lines)}
-
-    search_match = re.search(r"(?:search|find|look up)\s+(?:for\s+)?(.+)", message, re.IGNORECASE)
-    if search_match:
-        query = search_match.group(1).strip(" ?.!").strip()
-        matches = search_customer(query) if query else []
-        if not matches:
-            return {"reply": f"I couldn't find a customer matching '{query}'."}
-        lines = [f"{c['name']} · €{c['revenue']:,.2f} revenue · ID {c['id']}" for c in matches]
+    if any(term in q for term in ("news", "fda", "ema", "regulatory update", "pharma update")):
+        sources = get_pharma_news_sources()
+        lines = ["I can point you to trusted sources for current updates. This demo does not yet fetch or summarize live news:"]
+        lines.extend(f"- {item['name']}: {item['url']}" for item in sources)
         return {"reply": "\n".join(lines)}
 
-    return {"reply": "I can answer questions about total revenue, top customers, and customer lookup. Try: 'What is the total revenue?' or 'Show me the top 3 customers'."}
+    if any(term in q for term in ("project", "milestone", "report", "client work")):
+        projects = get_client_projects()
+        lines = ["Sample client project overview (fictional data):"]
+        lines.extend(f"- {p['project_id']} | {p['client']} | {p['drug']} | {p['status']} | Next: {p['next_milestone']}" for p in projects)
+        return {"reply": "\n".join(lines)}
+
+    if any(term in q for term in ("status", "testing", "test progress", "stability")):
+        drug_match = re.search(r"\b[A-Z]{2,5}-?\d{2,5}\b", question, re.IGNORECASE)
+        drug_id = drug_match.group(0).upper() if drug_match else "RX-214"
+        result = get_testing_status(drug_id)
+        if "error" in result:
+            return {"reply": result["error"]}
+        return {"reply": f"Sample testing status for {result['drug_id']} ({result['drug_name']}):\nStage: {result['stage']}\nStatus: {result['status']}\nLast updated: {result['updated']}\nNext milestone: {result['next_milestone']}\n\nThis is fictional demonstration data, not a laboratory result."}
+
+    if any(term in q for term in ("drug", "compound", "profile", "rx-")):
+        drug_match = re.search(r"\b[A-Z]{2,5}-?\d{2,5}\b", question, re.IGNORECASE)
+        drug_id = drug_match.group(0).upper() if drug_match else "RX-214"
+        result = get_drug_profile(drug_id)
+        if "error" in result:
+            return {"reply": result["error"]}
+        return {"reply": f"Sample drug profile: {result['drug_id']} · {result['drug_name']}\nClient: {result['client']}\nTherapeutic area: {result['therapeutic_area']}\nDevelopment stage: {result['development_stage']}\nTesting package: {result['testing_package']}\n\nFictional demo record. Confirm all scientific and regulatory details against approved source documents."}
+
+    return {"reply": "I can help with sample drug profiles, testing status, client project milestones and trusted pharma news sources. Try: 'Show drug RX-214', 'What is the testing status?', or 'Show latest pharma news sources'."}
 
 
-# Mount last so the app's own routes take precedence. The MCP endpoint remains /mcp.
-app.mount("/", mcp_app)
+# MCP tools remain available on the same service at /mcp.
+app.mount("/mcp", mcp.streamable_http_app())
