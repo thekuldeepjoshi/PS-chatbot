@@ -169,11 +169,11 @@ async def smart_answer(question: str) -> str:
         return "Please enter a question."
 
     def subject() -> str:
-        match = re.search(r"\b(?:for|about|of|on)\\s+([A-Za-z0-9][A-Za-z0-9 .-]{1,55})", question, re.I)
+        match = re.search(r"\b(?:for|about|of|on)\s+([A-Za-z0-9][A-Za-z0-9 .-]{1,55})", question, re.I)
         if match:
             value = match.group(1).strip(" .?!")
             return re.split(r"\b(?:and|with|including|in|status|profile|information)\\b", value, flags=re.I)[0].strip()
-        code = re.search(r"\b[A-Z]{2,5}-?\\d{2,5}\\b", question, re.I)
+        code = re.search(r"\b[A-Z]{2,5}-?\d{2,5}\\b", question, re.I)
         return code.group(0) if code else ""
 
     if any(x in q for x in ("my project", "client project", "project status", "project milestone", "report status", "my testing", "our project")):
@@ -182,7 +182,7 @@ async def smart_answer(question: str) -> str:
         lines.append("These are sample records, not live client data.")
         return "\n".join(lines)
 
-    code = re.search(r"\b[A-Z]{2,5}-?\\d{2,5}\\b", question, re.I)
+    code = re.search(r"\b[A-Z]{2,5}-?\d{2,5}\\b", question, re.I)
     if any(x in q for x in ("testing status", "test status", "testing progress", "milestone", "report availability")):
         if code and code.group(0).upper() in DRUGS:
             r = get_testing_status(code.group(0))
