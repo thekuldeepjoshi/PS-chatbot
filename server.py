@@ -1,6 +1,14 @@
+import json
+import os
+
 from mcp.server.fastmcp import FastMCP
 
-mcp = FastMCP("business-analytics")
+# Render supplies PORT at runtime. Bind publicly so Render's proxy can reach us.
+mcp = FastMCP(
+    "business-analytics",
+    host="0.0.0.0",
+    port=int(os.environ.get("PORT", "10000")),
+)
 
 # Fictional demo data. All amounts are in EUR.
 CUSTOMERS = [
@@ -60,7 +68,6 @@ def create_customer(customer_id: str, name: str, revenue: float = 0.0) -> dict:
 @mcp.resource("business://customers")
 def customer_directory() -> str:
     """Provide the current customer directory as JSON text."""
-    import json
     return json.dumps(CUSTOMERS, indent=2)
 
 
@@ -75,4 +82,5 @@ def revenue_summary() -> str:
 
 
 if __name__ == "__main__":
-    mcp.run()
+    # Streamable HTTP is the network transport used by deployed MCP servers.
+    mcp.run(transport="streamable-http")
