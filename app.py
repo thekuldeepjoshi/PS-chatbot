@@ -31,7 +31,7 @@ PAGE = """<!doctype html>
 </head>
 <body><main class="wrap">
 <header class="top"><div class="logo">PI</div><div><h1>PharmaPulse Intelligence</h1><p>Drug testing, project visibility and industry updates</p></div><div class="pill">DEMO ENVIRONMENT</div></header>
-<section class="hero"><div class="eyebrow">Client portal assistant</div><h2>Your testing projects, in one place.</h2><p>Ask about drug profiles, testing milestones, project progress and trusted pharmaceutical news sources. This preview uses fictional sample records.</p></section>
+<section class="hero"><div class="eyebrow">PharmaPulse Intelligence</div><h2>Your pharmaceutical testing, connected.</h2><p>Access drug intelligence, monitor testing progress, track project milestones and explore trusted regulatory and clinical trial information. Get the insights you need, all in one place.</p></section>
 <h2 class="section">Ask the assistant</h2>
 <section class="workspace">
 <div class="chat"><div class="head">Pharma support assistant</div><div class="chatlog" id="log" aria-live="polite"><div class="bubble bot"><div class="small">ASSISTANT</div>Hello. Ask me about a sample drug, testing status, your project milestones, or pharmaceutical news sources.</div></div>
