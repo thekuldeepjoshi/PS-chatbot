@@ -32,11 +32,6 @@ PAGE = """<!doctype html>
 <body><main class="wrap">
 <header class="top"><div class="logo">PI</div><div><h1>PharmaPulse Intelligence</h1><p>Drug testing, project visibility and industry updates</p></div><div class="pill">DEMO ENVIRONMENT</div></header>
 <section class="hero"><div class="eyebrow">Client portal assistant</div><h2>Your testing projects, in one place.</h2><p>Ask about drug profiles, testing milestones, project progress and trusted pharmaceutical news sources. This preview uses fictional sample records.</p></section>
-<section class="grid">
-<div class="card"><div class="symbol">🧪</div><h3>Drug information</h3><p>View sample compound profiles, test stages, methods and milestone status.</p></div>
-<div class="card"><div class="symbol">📋</div><h3>Client projects</h3><p>Check project progress, next milestones and report availability.</p></div>
-<div class="card"><div class="symbol">🌐</div><h3>Pharma news</h3><p>Open official FDA, EMA and clinical-trial information sources.</p></div>
-</section>
 <h2 class="section">Ask the assistant</h2>
 <section class="workspace">
 <div class="chat"><div class="head">Pharma support assistant</div><div class="chatlog" id="log" aria-live="polite"><div class="bubble bot"><div class="small">ASSISTANT</div>Hello. Ask me about a sample drug, testing status, your project milestones, or pharmaceutical news sources.</div></div>
@@ -69,7 +64,7 @@ async def lifespan(app):
         yield
 
 
-app = FastAPI(title="PharmaPulse Intelligence", lifespan=lifespan)
+app = FastAPI(title="PharmaPulse", lifespan=lifespan)
 
 
 @app.get("/", response_class=HTMLResponse)
