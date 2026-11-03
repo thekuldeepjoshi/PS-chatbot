@@ -11,7 +11,6 @@ from server import (
     get_drug_profile,
     get_testing_status,
     get_client_projects,
-    get_pharma_news_sources,
     smart_answer,
     mcp,
 )
