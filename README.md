@@ -1,12 +1,12 @@
 # PS Chatbot: Business Analytics MCP Server
 
-A small Model Context Protocol (MCP) server that exposes fictional business customer data through tools, a resource, and a prompt. It is designed as a practical portfolio and interview demo.
+A small Model Context Protocol (MCP) server exposing fictional business customer data through tools, a resource, and a prompt. It is designed as a practical portfolio and interview demo.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    A[AI host or MCP client] <-->|MCP| B[Python MCP server]
+    A[AI host or MCP client] <-->|MCP over Streamable HTTP| B[Python MCP server]
     B --> C[Analytics tools]
     B --> D[Customer resource]
     B --> E[Revenue summary prompt]
@@ -14,7 +14,7 @@ flowchart LR
     D --> F
 ```
 
-## What it demonstrates
+## Capabilities
 
 **Tools**
 - `get_total_revenue()`: total revenue in EUR.
@@ -26,68 +26,66 @@ flowchart LR
 - `business://customers`: customer directory in JSON format.
 
 **Prompt**
-- `revenue_summary`: a reusable prompt for analyzing the customer data.
+- `revenue_summary`: reusable prompt for analyzing the customer data.
 
 The sample data is fictional and resets whenever the server restarts.
 
-## Requirements
+## Deploy on Render
 
-- Python 3.10 or newer
-- pip
+This repository includes a `render.yaml` Blueprint. In Render:
+
+1. Open [Render Dashboard](https://dashboard.render.com/).
+2. Select **New** > **Blueprint**.
+3. Connect the GitHub repository `thekuldeepjoshi/PS-chatbot`.
+4. Render reads `render.yaml` and creates the web service.
+5. When deployment completes, your MCP endpoint is `https://YOUR-SERVICE.onrender.com/mcp`.
+
+You can also create a Web Service manually with:
+- Runtime: **Python 3**
+- Build command: `pip install -r requirements.txt`
+- Start command: `python server.py`
+- Branch: `main`
+
+The server binds to `0.0.0.0` and uses Render's `PORT` environment variable.
 
 ## Run locally
 
-Clone the repository, then run:
+Requirements: Python 3.10 or newer.
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-```
-
-Start the MCP server over stdio:
-
-```bash
 python server.py
 ```
 
-The server waits for an MCP client on standard input/output. It is not intended to be opened directly in a browser.
+The local MCP endpoint is `http://localhost:10000/mcp`.
 
-## Test with the included client
+## Test with MCP Inspector
 
-In a second terminal, with the virtual environment activated:
-
-```bash
-python client.py
-```
-
-The client starts the server as a subprocess, lists its tools, and calls the revenue and top-customer tools.
-
-## Inspect with MCP Inspector
-
-Install the MCP CLI tools from the dependency above, then run:
+With the virtual environment activated:
 
 ```bash
 mcp dev server.py
 ```
 
-This opens MCP Inspector so you can connect to the server and explore its tools, resource, and prompt.
+Connect to the server and explore its tools, resource, and prompt.
 
-## Example interview walkthrough
+## Interview walkthrough
 
 1. Explain that MCP standardizes how an AI application discovers and uses external capabilities.
-2. Start the server and connect using an MCP client or Inspector.
-3. Show tool discovery with `list_tools`.
-4. Call `get_total_revenue` and `get_top_customers`.
-5. Read the `business://customers` resource.
-6. Explain how authentication, persistent storage, authorization, logging, and input validation would be added for production.
+2. Connect an MCP client to the deployed `/mcp` endpoint.
+3. Discover the tools and call `get_total_revenue` and `get_top_customers`.
+4. Read the `business://customers` resource.
+5. Explain how authentication, persistent storage, authorization, logging, and validation would be added for production.
 
 ## Production considerations
 
-This repository is a learning demo, not a production service. A real deployment should use persistent storage, authenticate clients, authorize each operation, validate inputs, apply rate limits, log access safely, and avoid exposing sensitive customer data.
+This is a learning demo, not a production service. A real deployment should use persistent storage, authenticate clients, authorize each operation, validate inputs, apply rate limits, log access safely, and avoid exposing sensitive customer data.
 
 ## References
 
 - [Model Context Protocol documentation](https://modelcontextprotocol.io/)
 - [Official Python SDK](https://github.com/modelcontextprotocol/python-sdk)
+- [Render Web Services](https://render.com/docs/web-services)
