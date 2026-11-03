@@ -35,7 +35,7 @@ PAGE = """<!doctype html>
 <h2 class="section">Ask the assistant</h2>
 <section class="workspace">
 <div class="chat"><div class="head">Pharma support assistant</div><div class="chatlog" id="log" aria-live="polite"><div class="bubble bot"><div class="small">ASSISTANT</div>Hello. Ask me about a sample drug, testing status, your project milestones, or pharmaceutical news sources.</div></div>
-<div class="quick"><button data-q="Show drug RX-214">Drug profile</button><button data-q="What is the testing status?">Testing status</button><button data-q="Show my project milestones">Project milestones</button><button data-q="Show latest pharma news sources">Pharma news</button></div>
+<div class="quick"><button data-q="Show the public drug profile for aspirin">Aspirin drug profile</button><button data-q="What is the testing status for RX-214?">RX-214 testing status</button><button data-q="Show my project milestones">Project milestones</button><button data-q="Find clinical trials for pembrolizumab">Pembrolizumab trials</button><button data-q="Show recent FDA drug recall records">FDA recall records</button><button data-q="Which public data sources do you search?">Data sources</button></div>
 <form class="compose" id="form"><input id="question" placeholder="Ask about a drug, project or pharma news..." autocomplete="off"><button class="send">Send</button></form></div>
 <aside class="side"><div class="head">Trusted information sources</div>
 <div class="item"><strong>FDA Drug Safety & Availability</strong><span>US safety communications and drug updates</span><a href="https://www.fda.gov/drugs/drug-safety-and-availability" target="_blank" rel="noopener">Open FDA source ↗</a></div>
