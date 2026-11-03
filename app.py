@@ -19,7 +19,7 @@ PAGE = """<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Pharma Client Intelligence</title>
+<title>PharmaPulse Intelligence</title>
 <style>
 :root{color-scheme:dark;--bg:#0b1220;--panel:#121e31;--line:#293a52;--muted:#9eb0c8;--accent:#6da8ff;--green:#76d6b0}
 *{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#0c1728,#0a1020 65%);color:#edf4ff;font:15px/1.5 Inter,system-ui,sans-serif}
@@ -30,7 +30,7 @@ PAGE = """<!doctype html>
 </style>
 </head>
 <body><main class="wrap">
-<header class="top"><div class="logo">PI</div><div><h1>Pharma Client Intelligence</h1><p>Drug testing, project visibility and industry updates</p></div><div class="pill">DEMO ENVIRONMENT</div></header>
+<header class="top"><div class="logo">PI</div><div><h1>PharmaPulse Intelligence</h1><p>Drug testing, project visibility and industry updates</p></div><div class="pill">DEMO ENVIRONMENT</div></header>
 <section class="hero"><div class="eyebrow">Client portal assistant</div><h2>Your testing projects, in one place.</h2><p>Ask about drug profiles, testing milestones, project progress and trusted pharmaceutical news sources. This preview uses fictional sample records.</p></section>
 <section class="grid">
 <div class="card"><div class="symbol">🧪</div><h3>Drug information</h3><p>View sample compound profiles, test stages, methods and milestone status.</p></div>
@@ -49,7 +49,7 @@ PAGE = """<!doctype html>
 <div class="item"><strong>FDA Drug Approvals</strong><span>New drug approvals and review information</span><a href="https://www.fda.gov/drugs/development-approval-process-drugs" target="_blank" rel="noopener">Open FDA approvals ↗</a></div>
 </aside></section>
 <div class="notice"><strong>Confidentiality and safety:</strong> This is a demonstration using fictional drug and client records. Do not enter real client confidential information, patient data or unpublished trial results. Production access controls, verified data sources and audit logging are required before client use.</div>
-<div class="footer">Pharma Client Intelligence · Prototype · Not for clinical decision-making</div>
+<div class="footer">PharmaPulse Intelligence · Prototype · Not for clinical decision-making</div>
 </main>
 <script>
 const log=document.getElementById('log'),form=document.getElementById('form'),input=document.getElementById('question');
