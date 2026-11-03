@@ -169,20 +169,20 @@ async def smart_answer(question: str) -> str:
         return "Please enter a question."
 
     def subject() -> str:
-        match = re.search(r"\\b(?:for|about|of|on)\\s+([A-Za-z0-9][A-Za-z0-9 .-]{1,55})", question, re.I)
+        match = re.search(r"\b(?:for|about|of|on)\\s+([A-Za-z0-9][A-Za-z0-9 .-]{1,55})", question, re.I)
         if match:
             value = match.group(1).strip(" .?!")
-            return re.split(r"\\b(?:and|with|including|in|status|profile|information)\\b", value, flags=re.I)[0].strip()
-        code = re.search(r"\\b[A-Z]{2,5}-?\\d{2,5}\\b", question, re.I)
+            return re.split(r"\b(?:and|with|including|in|status|profile|information)\\b", value, flags=re.I)[0].strip()
+        code = re.search(r"\b[A-Z]{2,5}-?\\d{2,5}\\b", question, re.I)
         return code.group(0) if code else ""
 
     if any(x in q for x in ("my project", "client project", "project status", "project milestone", "report status", "my testing", "our project")):
         lines = ["Private project workspace (fictional demo records):"]
         lines.extend(f"- {p['project_id']} | {p['client']} | {p['drug']} | {p['status']} | Next: {p['next_milestone']} | Report: {p['report_status']}" for p in get_client_projects())
         lines.append("These are sample records, not live client data.")
-        return "\\n".join(lines)
+        return "\n".join(lines)
 
-    code = re.search(r"\\b[A-Z]{2,5}-?\\d{2,5}\\b", question, re.I)
+    code = re.search(r"\b[A-Z]{2,5}-?\\d{2,5}\\b", question, re.I)
     if any(x in q for x in ("testing status", "test status", "testing progress", "milestone", "report availability")):
         if code and code.group(0).upper() in DRUGS:
             r = get_testing_status(code.group(0))
@@ -201,7 +201,7 @@ async def smart_answer(question: str) -> str:
             if not data.get("studies"):
                 lines.append("No matching studies were returned.")
             lines.append("Source: " + data["source_url"] + ". Check the registry record for the latest sponsor-submitted information.")
-            return "\\n".join(lines)
+            return "\n".join(lines)
         except Exception:
             return "ClinicalTrials.gov could not be reached right now. Try https://clinicaltrials.gov/ directly."
 
@@ -216,7 +216,7 @@ async def smart_answer(question: str) -> str:
                 lines.append("No matching records were returned.")
             lines.append("Source: " + data["source_url"])
             lines.append("This is recall/enforcement data, not a complete adverse-event database or clinical risk assessment.")
-            return "\\n".join(lines)
+            return "\n".join(lines)
         except Exception:
             return "openFDA could not be reached. Try https://www.fda.gov/drugs/drug-safety-and-availability."
 
@@ -240,12 +240,12 @@ async def smart_answer(question: str) -> str:
                 lines.append(data["message"])
             lines.extend("Source: " + s["name"] + " " + s["url"] for s in data.get("sources", []))
             lines.append("Retrieved live from public APIs. These records are reference information, not laboratory results, clinical advice or proof of approval in every jurisdiction.")
-            return "\\n".join(lines)
+            return "\n".join(lines)
         except Exception:
             return "Public drug databases could not be reached just now. Try PubChem, ChEMBL or openFDA directly."
 
     if any(x in q for x in ("news", "fda", "ema", "regulatory update", "pharma update", "data sources", "open data")):
-        return "\\n".join(f"{name}: {url}" for name, url in PUBLIC_SOURCES.items())
+        return "\n".join(f"{name}: {url}" for name, url in PUBLIC_SOURCES.items())
 
     return "I can search public drug references (PubChem, ChEMBL, openFDA), clinical studies (ClinicalTrials.gov), and FDA recall records. I can also show fictional project examples. Try 'drug profile for aspirin', 'clinical trials for pembrolizumab', or 'show my project milestones'."
 
