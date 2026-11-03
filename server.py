@@ -6,7 +6,7 @@ import httpx
 from mcp.server.fastmcp import FastMCP
 
 mcp = FastMCP(
-    "pharma-client-intelligence",
+    "pharmapulse-intelligence",
     host="0.0.0.0",
     port=int(os.environ.get("PORT", "10000")),
 )
