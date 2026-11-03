@@ -1,4 +1,4 @@
-# Pharma Client Intelligence
+# PharmaPulse Intelligence
 
 A browser-based pharmaceutical information assistant and MCP server prototype. It separates live public scientific/regulatory reference data from fictional private client-project examples.
 
