@@ -4,9 +4,6 @@ import re
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
-from starlette.applications import Starlette
-from starlette.routing import Mount
-
 from server import (
     CUSTOMERS,
     get_total_revenue,
@@ -134,7 +131,7 @@ async def lifespan(app):
 
 
 # Keep the MCP endpoint available at /mcp alongside the browser chat UI.
-mcp_app = mcp.streamable_http_app(host="0.0.0.0")
+mcp_app = mcp.streamable_http_app()
 app = FastAPI(title="PS Business Assistant", lifespan=lifespan)
 
 
